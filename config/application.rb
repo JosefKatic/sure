@@ -8,6 +8,11 @@ Bundler.require(*Rails.groups)
 
 module Sure
   class Application < Rails::Application
+    # On NixOS the app lives in the read-only store; runtime writes must go to stateDir.
+    if ENV["RAILS_ROOT"].present?
+      config.root = Pathname(ENV["RAILS_ROOT"])
+    end
+
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.2
 
