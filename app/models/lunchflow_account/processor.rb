@@ -40,20 +40,23 @@ class LunchflowAccount::Processor
       account = lunchflow_account.current_account
       balance = lunchflow_account.current_balance || 0
 
-      # LunchFlow balance convention matches our app convention:
-      # - Positive balance = debt (you owe money)
-      # - Negative balance = credit balance (bank owes you, e.g., overpayment)
-      # No sign conversion needed - pass through as-is (same as Plaid)
-      #
-      # Exception: CreditCard and Loan accounts return inverted signs
-      # Provider returns negative for positive balance, so we negate it
-      if account.accountable_type == "CreditCard" || account.accountable_type == "Loan"
+      # Credit cards: when "balance is remaining credit" is enabled, the provider sends "remaining to spend"
+      # (e.g. 17899) instead of debt. We store debt (amount owed). Convert: debt = limit - remaining.
+      # When checkbox is off, pass through as-is (Lunchflow sends positive = debt, same as our app).
+      # Loans: provider returns inverted signs, so negate.
+      # Other account types (depository, etc.): pass through as-is.
+      if account.accountable_type == "CreditCard" && account.credit_card.balance_is_remaining_credit?
+        limit = account.credit_card.available_credit
+        if limit.present? && limit.to_d > 0
+          balance = limit.to_d - balance
+        end
+      elsif account.accountable_type == "CreditCard" || account.accountable_type == "Loan"
         balance = -balance
       end
 
       # Normalize currency with fallback chain: parsed lunchflow currency -> existing account currency -> USD
       currency = parse_currency(lunchflow_account.currency) || account.currency || "USD"
-
+      
       # Update account balance
       account.update!(
         balance: balance,

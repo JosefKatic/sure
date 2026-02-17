@@ -13,6 +13,11 @@
       </div>
 
       <div class="flex items-center gap-2">
+        <%= credit_card_form.check_box :balance_is_remaining_credit, { class: "checkbox checkbox--light" }, "1", "0" %>
+        <%= credit_card_form.label :balance_is_remaining_credit, t("credit_cards.form.balance_is_remaining_credit"), class: "text-sm text-primary" %>
+      </div>
+
+      <div class="flex items-center gap-2">
         <%= credit_card_form.money_field :minimum_payment,
                                         label: t("credit_cards.form.minimum_payment"),
                                         placeholder: t("credit_cards.form.minimum_payment_placeholder"),

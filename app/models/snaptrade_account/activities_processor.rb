@@ -1,3 +1,9 @@
+# Processes SnapTrade activity payloads (trades, dividends, contributions, etc.).
+# Format matches SnapTrade API / broker exports (e.g. Trading212):
+#   - Top-level: id, type, units, amount, price, symbol, currency, trade_date, settlement_date, description
+#   - Activities: symbol.symbol is the ticker string (e.g. "TKA.DE", "IGLN.L"); CONTRIBUTION has symbol: null
+#   - Dates: ISO8601 strings (trade_date, settlement_date)
+#   - BUY/SELL: amount can be negative (outflow); we normalize via quantity * price for trades
 class SnaptradeAccount::ActivitiesProcessor
   include SnaptradeAccount::DataHelpers
 
@@ -211,10 +217,11 @@ class SnaptradeAccount::ActivitiesProcessor
       activity_date = parse_date(data[:settlement_date]) || parse_date(data["settlement_date"]) ||
                       parse_date(data[:trade_date]) || parse_date(data["trade_date"]) || Date.current
 
-      # Build description
+      # Build description (cash activities: CONTRIBUTION has symbol null; DIVIDEND etc. have symbol.symbol = ticker)
       raw_symbol_data = data[:symbol] || data["symbol"] || {}
       symbol_data = raw_symbol_data.is_a?(Hash) ? raw_symbol_data.with_indifferent_access : {}
       symbol = symbol_data[:symbol] || symbol_data["symbol"] || symbol_data[:ticker]
+      symbol = symbol[:symbol] || symbol["symbol"] if symbol.is_a?(Hash) # nested broker format
       description = data[:description] || data["description"] || build_description(activity_type, symbol)
 
       # Normalize amount sign for certain activity types
@@ -247,9 +254,9 @@ class SnaptradeAccount::ActivitiesProcessor
     def normalize_cash_amount(amount, activity_type)
       case activity_type
       when "WITHDRAWAL", "TRANSFER_OUT", "FEE", "TAX"
-        -amount.abs  # These should be negative (money out)
+        -amount.abs  # Outflow → negative amount
       when "CONTRIBUTION", "TRANSFER_IN", "DIVIDEND", "DIV", "INTEREST", "CASH"
-        amount.abs   # These should be positive (money in)
+        amount.abs   # Inflow → positive amount (contribution is positive)
       else
         amount
       end

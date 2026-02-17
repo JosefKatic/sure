@@ -1,3 +1,9 @@
+# Processes SnapTrade positions/holdings payloads.
+# Format matches SnapTrade API / broker exports (e.g. Trading212):
+#   - Each item: price, units, symbol, currency, average_purchase_price, (fractional_units, open_pnl, ...)
+#   - Symbol is deeply nested: holding.symbol.symbol.symbol = ticker string (e.g. "ISLN.L");
+#     holding.symbol.symbol.raw_symbol = base ticker ("ISLN"); holding.symbol.symbol.description = name
+#   - Currency at holding level or symbol.symbol.currency.code
 class SnaptradeAccount::HoldingsProcessor
   include SnaptradeAccount::DataHelpers
 

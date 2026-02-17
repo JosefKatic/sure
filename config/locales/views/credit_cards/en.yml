@@ -10,6 +10,7 @@ en:
       apr_placeholder: '15.99'
       available_credit: Available credit
       available_credit_placeholder: '10000'
+      balance_is_remaining_credit: Remaining to spend
       expiration_date: Expiration date
       minimum_payment: Minimum payment
       minimum_payment_placeholder: '100'

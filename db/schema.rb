@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_02_10_120000) do
+ActiveRecord::Schema[7.2].define(version: 2026_02_14_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -25,7 +25,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_10_120000) do
     t.uuid "provider_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["account_id", "provider_type"], name: "index_account_providers_on_account_id_and_provider_type", unique: true
+    t.index ["account_id", "provider_type"], name: "index_account_providers_on_account_and_provider_type", unique: true
     t.index ["provider_type", "provider_id"], name: "index_account_providers_on_provider_type_and_provider_id", unique: true
   end
 
@@ -289,6 +289,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_10_120000) do
     t.decimal "annual_fee", precision: 10, scale: 2
     t.jsonb "locked_attributes", default: {}
     t.string "subtype"
+    t.boolean "balance_is_remaining_credit", default: false, null: false
   end
 
   create_table "cryptos", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1441,9 +1442,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_10_120000) do
     t.datetime "set_onboarding_preferences_at"
     t.datetime "set_onboarding_goals_at"
     t.string "default_account_order", default: "name_asc"
-    t.string "ui_layout"
     t.jsonb "preferences", default: {}, null: false
     t.string "locale"
+    t.string "ui_layout"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["family_id"], name: "index_users_on_family_id"
     t.index ["last_viewed_chat_id"], name: "index_users_on_last_viewed_chat_id"

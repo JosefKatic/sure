@@ -196,9 +196,9 @@ class IndexaCapitalAccount::ActivitiesProcessor
     def normalize_cash_amount(amount, activity_type)
       case activity_type
       when "WITHDRAWAL", "TRANSFER_OUT", "FEE", "TAX"
-        -amount.abs  # These should be negative (money out)
+        -amount.abs  # Outflow → negative amount
       when "CONTRIBUTION", "TRANSFER_IN", "DIVIDEND", "DIV", "INTEREST"
-        amount.abs   # These should be positive (money in)
+        amount.abs   # Inflow → positive amount (contribution is positive)
       else
         amount
       end
