@@ -226,7 +226,7 @@ in
       };
 
       port = lib.mkOption {
-        type = lib.types.int;
+        type = lib.types.port;
         default = 6379;
         description = "Redis connection port";
       };
