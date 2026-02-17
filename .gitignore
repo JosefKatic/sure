@@ -10,6 +10,7 @@
 
 # Ignore all environment files (except templates).
 /.env*
+!/.envrc
 !/.env*.erb
 !.env*.example
 
@@ -119,3 +120,7 @@ scripts/
 .worktrees/
 .security-key
 logs/security/
+
+# Nix
+.devenv
+.devenv.flake.nix

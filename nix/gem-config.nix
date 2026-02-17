@@ -47,7 +47,4 @@
     buildInputs = [ pkgs.libffi ];
     nativeBuildInputs = [ pkgs.pkg-config ];
   };
-
-  # Prebuilt Tailwind CLI binaries; no native build. Musl/gnu targets filtered in flake.nix.
-  tailwindcss-ruby = attrs: { };
 }

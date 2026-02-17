@@ -28,7 +28,7 @@ let
       POSTGRES_USER = cfg.database.user;
       RAILS_MAX_THREADS = toString cfg.puma.threads;
       WEB_CONCURRENCY = toString cfg.puma.workers;
-      REDIS_URL = cfg.redis.url;
+      REDIS_URL = "redis://${cfg.redis.host}:${cfg.redis.port}/1";
     }
     // cfg.environment;
 
@@ -219,10 +219,16 @@ in
     # ---------- Redis ----------
 
     redis = {
-      url = lib.mkOption {
+      host = lib.mkOption {
         type = lib.types.str;
-        default = "redis://localhost:6379/1";
+        default = "localhost";
         description = "Redis connection URL.";
+      };
+
+      port = lib.mkOption {
+        type = lib.types.int;
+        default = 6379;
+        description = "Redis connection port";
       };
 
       createLocally = lib.mkOption {
@@ -282,7 +288,7 @@ in
     # ---- Redis ----
     services.redis.servers.sure = lib.mkIf cfg.redis.createLocally {
       enable = true;
-      port = 6380;
+      port = cfg.redis.port;
     };
 
     # ---- System user ----
