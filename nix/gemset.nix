@@ -2251,12 +2251,12 @@
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
-      sha256 = "0i44156w3k6c88nv72wskizpyq3nwysisnj9qi9vkxwffrzp17b6";
+      sha256 = "0kpq7q4707spgy0aa7x9c91q10fyx97iwkiykaazk7dyq8r6w9fy";
       target = "ruby";
       type = "gem";
     };
     targets = [];
-    version = "3.1.18";
+    version = "3.1.20";
   };
   rack-attack = {
     dependencies = ["rack"];

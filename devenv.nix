@@ -24,6 +24,15 @@
     pkgs.libyaml
     pkgs.openssl
     pkgs.watchman
+    pkgs.postgresql
+    pkgs.redis
+    pkgs.libyaml
+    pkgs.vips
+    pkgs.pkg-config
+    pkgs.openssl
+    pkgs.zlib
+    pkgs.libiconv
+    pkgs.tailwindcss_4
   ]
   ++ lib.optionals pkgs.stdenv.isDarwin [ pkgs.libllvm ];
 
