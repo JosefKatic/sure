@@ -28,7 +28,7 @@ let
       POSTGRES_USER = cfg.database.user;
       RAILS_MAX_THREADS = toString cfg.puma.threads;
       WEB_CONCURRENCY = toString cfg.puma.workers;
-      REDIS_URL = "redis://${cfg.redis.host}:${cfg.redis.port}/1";
+      REDIS_URL = "redis://${cfg.redis.host}:${toString cfg.redis.port}/1";
     }
     // cfg.environment;
 
