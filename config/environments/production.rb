@@ -78,15 +78,16 @@ Rails.application.configure do
   config.action_mailer.default_url_options = { host: ENV["APP_DOMAIN"] }
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    address:   ENV["SMTP_ADDRESS"],
-    port:      ENV["SMTP_PORT"],
-    user_name: ENV["SMTP_USERNAME"],
-    password:  ENV["SMTP_PASSWORD"],
-    tls:       ENV["SMTP_TLS_ENABLED"] == "true",
-    domain:    ENV["SMTP_DOMAIN"],
-    authentication: ENV["SMTP_AUTHENTICATION"],
-    enable_starttls: ENV["SMTP_ENABLE_STARTTLS"] == "true",
-    openssl_verify_mode: ENV["SMTP_OPENSSL_VERIFY_MODE"]
+    address:             ENV["SMTP_ADDRESS"],
+    port:                ENV["SMTP_PORT"],
+    user_name:           ENV["SMTP_USERNAME"],
+    password:            ENV["SMTP_PASSWORD"],
+    tls:                 ENV["SMTP_TLS_ENABLED"] == "true",
+    openssl_verify_mode: ENV["SMTP_TLS_SKIP_VERIFY"] == "true" ? OpenSSL::SSL::VERIFY_NONE : OpenSSL::SSL::VERIFY_PEER,
+    ca_file:             ENV["SSL_CA_FILE"]
+    domain:              ENV["SMTP_DOMAIN"],
+    authentication:      ENV["SMTP_AUTHENTICATION"],
+    enable_starttls:     ENV["SMTP_ENABLE_STARTTLS"] == "true",
   }
 
   # Ignore bad email addresses and do not raise email delivery errors.

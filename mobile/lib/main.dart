@@ -6,9 +6,11 @@ import 'providers/auth_provider.dart';
 import 'providers/accounts_provider.dart';
 import 'providers/transactions_provider.dart';
 import 'providers/chat_provider.dart';
+import 'providers/theme_provider.dart';
 import 'screens/backend_config_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/main_navigation_screen.dart';
+import 'screens/sso_onboarding_screen.dart';
 import 'services/api_config.dart';
 import 'services/connectivity_service.dart';
 import 'services/log_service.dart';
@@ -18,7 +20,7 @@ void main() async {
   await ApiConfig.initialize();
 
   // Add initial log entry
-  LogService.instance.info('App', 'Sure Finance app starting...');
+  LogService.instance.info('App', 'Sure app starting...');
 
   runApp(const SureApp());
 }
@@ -34,6 +36,7 @@ class SureApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ConnectivityService()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProxyProvider<ConnectivityService, AccountsProvider>(
           create: (_) => AccountsProvider(),
           update: (_, connectivityService, accountsProvider) {
@@ -61,8 +64,9 @@ class SureApp extends StatelessWidget {
           },
         ),
       ],
-      child: MaterialApp(
-        title: 'Sure Finance',
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) => MaterialApp(
+        title: 'Sure Finances',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           fontFamily: 'Geist',
@@ -138,14 +142,14 @@ class SureApp extends StatelessWidget {
             ),
           ),
         ),
-        themeMode: ThemeMode.system,
+        themeMode: themeProvider.themeMode,
         routes: {
           '/config': (context) => const BackendConfigScreen(),
           '/login': (context) => const LoginScreen(),
           '/home': (context) => const MainNavigationScreen(),
         },
         home: const AppWrapper(),
-      ),
+      )),
     );
   }
 }
@@ -253,6 +257,10 @@ class _AppWrapperState extends State<AppWrapper> {
 
         if (authProvider.isAuthenticated) {
           return const MainNavigationScreen();
+        }
+
+        if (authProvider.ssoOnboardingPending) {
+          return const SsoOnboardingScreen();
         }
 
         return LoginScreen(
