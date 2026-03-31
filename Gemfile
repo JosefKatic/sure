@@ -31,6 +31,7 @@ gem "lookbook", "2.3.11"
 gem "hotwire_combobox"
 
 # Background Jobs
+gem "connection_pool", "~> 2.5" # pin to 2.x; 3.0 breaks sidekiq 8.x
 gem "sidekiq"
 gem "sidekiq-cron"
 gem "sidekiq-unique-jobs"
@@ -91,6 +92,8 @@ gem "omniauth-google-oauth2"
 gem "omniauth-github"
 gem "omniauth-saml", "~> 2.1"
 
+gem "openssl", ">= 3.3.1"
+
 # State machines
 gem "aasm"
 gem "after_commit_everywhere", "~> 1.0"
@@ -124,6 +127,13 @@ group :development do
   gem "foreman"
 end
 
+group :development, :test do
+  gem "rspec-rails"
+  gem "rswag-api"
+  gem "rswag-specs"
+  gem "rswag-ui"
+end
+
 group :test do
   gem "capybara"
   gem "selenium-webdriver"
@@ -132,8 +142,4 @@ group :test do
   gem "webmock"
   gem "climate_control"
   gem "simplecov", require: false
-  gem "rspec-rails"
-  gem "rswag-api"
-  gem "rswag-specs"
-  gem "rswag-ui"
 end
