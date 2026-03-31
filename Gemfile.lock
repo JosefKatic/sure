@@ -355,7 +355,6 @@ GEM
       benchmark
       logger
     mini_mime (1.1.5)
-    mini_portile2 (2.8.9)
     minitest (5.25.5)
     mocha (2.7.1)
       ruby2_keywords (>= 0.0.5)
@@ -376,9 +375,6 @@ GEM
     net-smtp (0.5.1)
       net-protocol
     nio4r (2.7.4)
-    nokogiri (1.18.9)
-      mini_portile2 (~> 2.8.2)
-      racc (~> 1.4)
     nokogiri (1.18.9-aarch64-linux-gnu)
       racc (~> 1.4)
     nokogiri (1.18.9-aarch64-linux-musl)
@@ -443,6 +439,7 @@ GEM
       tzinfo
       validate_url
       webfinger (~> 2.0)
+    openssl (4.0.1)
     ostruct (0.6.2)
     pagy (9.3.5)
     parallel (1.27.0)
@@ -776,7 +773,6 @@ PLATFORMS
   arm-linux-gnu
   arm-linux-musl
   arm64-darwin
-  ruby
   x86_64-darwin
   x86_64-linux
   x86_64-linux-gnu
@@ -828,6 +824,7 @@ DEPENDENCIES
   omniauth-rails_csrf_protection
   omniauth-saml (~> 2.1)
   omniauth_openid_connect
+  openssl (>= 3.3.1)
   ostruct
   pagy
   pdf-reader (~> 2.12)
@@ -881,4 +878,4 @@ RUBY VERSION
    ruby 3.4.7p58
 
 BUNDLED WITH
-   2.6.9
+   2.7.2

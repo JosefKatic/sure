@@ -91,6 +91,8 @@ gem "omniauth-google-oauth2"
 gem "omniauth-github"
 gem "omniauth-saml", "~> 2.1"
 
+gem "openssl", ">= 3.3.1"
+
 # State machines
 gem "aasm"
 gem "after_commit_everywhere", "~> 1.0"

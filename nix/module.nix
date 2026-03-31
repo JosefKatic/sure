@@ -29,6 +29,8 @@ let
       RAILS_MAX_THREADS = toString cfg.puma.threads;
       WEB_CONCURRENCY = toString cfg.puma.workers;
       REDIS_URL = "redis://${cfg.redis.host}:${toString cfg.redis.port}/1";
+      SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
+      NIX_SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
     }
     // cfg.environment;
 
@@ -96,21 +98,7 @@ let
     # This prevents gems from writing to the read-only Nix store
     export RAILS_ROOT="${cfg.stateDir}"
     
-    # Export credentials from LoadCredential (available in ExecStartPre)
-    if [ -n "''${CREDENTIALS_DIRECTORY:-}" ]; then
-      export SECRET_KEY_BASE="$(< "$CREDENTIALS_DIRECTORY/secret_key_base")"
-      ${lib.optionalString (cfg.masterKeyFile != null) ''
-        if [ -f "$CREDENTIALS_DIRECTORY/master_key" ]; then
-          export RAILS_MASTER_KEY="$(< "$CREDENTIALS_DIRECTORY/master_key")"
-        fi
-      ''}
-      ${lib.optionalString (cfg.database.passwordFile != null) ''
-        if [ -f "$CREDENTIALS_DIRECTORY/db_password" ]; then
-          export POSTGRES_PASSWORD="$(< "$CREDENTIALS_DIRECTORY/db_password")"
-        fi
-      ''}
-    fi
-    
+    # Credentials are loaded by the app from CREDENTIALS_DIRECTORY via *_FILE env vars (set in the unit).
     ${surePackage}/bin/sure-rake db:prepare
   '';
 
@@ -164,10 +152,21 @@ in
       example = lib.literalExpression ''
         {
           APP_DOMAIN = "finance.example.com";
-          OPENAI_ACCESS_TOKEN = "sk-...";
         }
       '';
       description = "Additional environment variables to pass to Sure.";
+    };
+
+    environmentFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.path;
+      default = null;
+      example = "/etc/sure/env";
+      description = ''
+        Path to an environment file to load (e.g. a .env-style file).
+        The file is loaded by systemd (EnvironmentFile=) before the service starts.
+        Each line should be KEY=VALUE; lines starting with # are ignored by systemd.
+        Variables from this file can be overridden by the environment option.
+      '';
     };
 
     # ---------- Database ----------
@@ -318,6 +317,12 @@ in
         RAILS_TMP = "${cfg.stateDir}/tmp";
         RAILS_FORCE_SSL = "false";
         RAILS_ASSUME_SSL = "false";
+        # Credential ids: app reads from CREDENTIALS_DIRECTORY/<id> (systemd sets CREDENTIALS_DIRECTORY when LoadCredential is used)
+        SECRET_KEY_BASE_FILE = "secret_key_base";
+      } // lib.optionalAttrs (cfg.masterKeyFile != null) {
+        RAILS_MASTER_KEY_FILE = "master_key";
+      } // lib.optionalAttrs (cfg.database.passwordFile != null) {
+        POSTGRES_PASSWORD_FILE = "db_password";
       };
 
       path = [ surePackage pkgs.postgresql ];
@@ -333,10 +338,13 @@ in
           migrateScript
         ];
 
+        ExecStart = [
+          "${surePackage}/bin/sure-bundle exec puma -C ${cfg.stateDir}/config/puma.rb"
+        ];
+
         Restart = "on-failure";
         RestartSec = "10s";
 
-        # Load secret key base from file
         LoadCredential = [
           "secret_key_base:${cfg.secretKeyBaseFile}"
         ] ++ lib.optional (cfg.masterKeyFile != null) "master_key:${cfg.masterKeyFile}"
@@ -347,25 +355,17 @@ in
         ProtectHome = true;
         PrivateTmp = true;
         NoNewPrivileges = true;
-        ReadWritePaths = [ cfg.stateDir ];
+        ReadWritePaths = [ cfg.stateDir ]
+          ++ lib.optional (cfg.environmentFile != null) (toString cfg.environmentFile);
 
         StateDirectory = "sure";
         StateDirectoryMode = "0750";
         RuntimeDirectory = "sure";
         RuntimeDirectoryMode = "0750";
+      }
+      // lib.optionalAttrs (cfg.environmentFile != null) {
+        EnvironmentFile = cfg.environmentFile;
       };
-
-      # Export secrets as environment variables from LoadCredential
-      script = ''
-        export SECRET_KEY_BASE="$(< "$CREDENTIALS_DIRECTORY/secret_key_base")"
-        ${lib.optionalString (cfg.masterKeyFile != null) ''
-          export RAILS_MASTER_KEY="$(< "$CREDENTIALS_DIRECTORY/master_key")"
-        ''}
-        ${lib.optionalString (cfg.database.passwordFile != null) ''
-          export POSTGRES_PASSWORD="$(< "$CREDENTIALS_DIRECTORY/db_password")"
-        ''}
-        exec ${surePackage}/bin/sure-bundle exec puma -C ${cfg.stateDir}/config/puma.rb
-      '';
     };
 
     # ---- Sidekiq systemd service ----
@@ -380,6 +380,11 @@ in
         TMPDIR = "${cfg.stateDir}/tmp";
         RAILS_TMP = "${cfg.stateDir}/tmp";
         RAILS_MAX_THREADS = toString cfg.sidekiq.concurrency;
+        SECRET_KEY_BASE = "%d/secret_key_base";
+      } // lib.optionalAttrs (cfg.masterKeyFile != null) {
+        RAILS_MASTER_KEY = "%d/master_key";
+      } // lib.optionalAttrs (cfg.database.passwordFile != null) {
+        POSTGRES_PASSWORD = "%d/db_password";
       };
 
       path = [ surePackage pkgs.postgresql ];
@@ -403,19 +408,16 @@ in
         ProtectHome = true;
         PrivateTmp = true;
         NoNewPrivileges = true;
-        ReadWritePaths = [ cfg.stateDir ];
-      };
+        ReadWritePaths = [ cfg.stateDir ]
+          ++ lib.optional (cfg.environmentFile != null) (toString cfg.environmentFile);
 
-      script = ''
-        export SECRET_KEY_BASE="$(< "$CREDENTIALS_DIRECTORY/secret_key_base")"
-        ${lib.optionalString (cfg.masterKeyFile != null) ''
-          export RAILS_MASTER_KEY="$(< "$CREDENTIALS_DIRECTORY/master_key")"
-        ''}
-        ${lib.optionalString (cfg.database.passwordFile != null) ''
-          export POSTGRES_PASSWORD="$(< "$CREDENTIALS_DIRECTORY/db_password")"
-        ''}
-        exec ${surePackage}/bin/sure-bundle exec sidekiq -C ${cfg.stateDir}/config/sidekiq.yml
-      '';
+        ExecStart = [
+          "${surePackage}/bin/sure-bundle exec sidekiq -C ${cfg.stateDir}/config/sidekiq.yml"
+        ];
+      }
+      // lib.optionalAttrs (cfg.environmentFile != null) {
+        EnvironmentFile = cfg.environmentFile;
+      };
     };
   };
 }

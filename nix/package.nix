@@ -4,6 +4,7 @@
   rubyEnv,
   ruby,
   vips,
+  cacert,
   postgresql,
   libyaml,
   shared-mime-info,
@@ -58,6 +59,7 @@ stdenv.mkDerivation {
     postgresql.lib
     libyaml
     shared-mime-info
+    cacert
   ];
 
   buildPhase = ''
