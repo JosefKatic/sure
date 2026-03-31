@@ -11,6 +11,7 @@
     TAILWINDCSS_INSTALL_DIR = "${pkgs.tailwindcss_4}/bin";
     DB_HOST = "127.0.0.1";
     REDISDATA = "${config.env.DEVENV_STATE}/redis";
+    LD_LIBRARY_PATH = lib.makeLibraryPath [ pkgs.openssl pkgs.libyaml pkgs.zlib pkgs.vips ];
   };
 
   # https://devenv.sh/languages/
@@ -29,10 +30,11 @@
     pkgs.libyaml
     pkgs.vips
     pkgs.pkg-config
-    pkgs.openssl
     pkgs.zlib
     pkgs.libiconv
     pkgs.tailwindcss_4
+    pkgs.nodejs
+    pkgs.bun
   ]
   ++ lib.optionals pkgs.stdenv.isDarwin [ pkgs.libllvm ];
 
