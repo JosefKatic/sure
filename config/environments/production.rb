@@ -84,10 +84,10 @@ Rails.application.configure do
     password:            ENV["SMTP_PASSWORD"],
     tls:                 ENV["SMTP_TLS_ENABLED"] == "true",
     openssl_verify_mode: ENV["SMTP_TLS_SKIP_VERIFY"] == "true" ? OpenSSL::SSL::VERIFY_NONE : OpenSSL::SSL::VERIFY_PEER,
-    ca_file:             ENV["SSL_CA_FILE"]
+    ca_file:             ENV["SSL_CA_FILE"],
     domain:              ENV["SMTP_DOMAIN"],
     authentication:      ENV["SMTP_AUTHENTICATION"],
-    enable_starttls:     ENV["SMTP_ENABLE_STARTTLS"] == "true",
+    enable_starttls:     ENV["SMTP_ENABLE_STARTTLS"] == "true"
   }
 
   # Ignore bad email addresses and do not raise email delivery errors.
